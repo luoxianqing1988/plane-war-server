@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>数字飞机大战</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-wrapper">
+    <!-- 顶部信息栏 -->
+    <div id="top-bar">
+      <div id="score-display">积分: <span id="score-value">0</span></div>
+      <div id="hp-display">♥ × <span id="hp-value">10</span></div>
+      <button id="save-exit-btn" class="hidden">💾 保存退出</button>
+    </div>
+
+    <!-- 战斗区域 (Canvas + 答题覆盖层) -->
+    <div id="battlefield-container">
+      <canvas id="battlefield"></canvas>
+
+      <!-- 答题覆盖层 (默认隐藏) -->
+      <div id="answer-overlay" class="hidden">
+        <div id="question-text">3 + 5 = ?</div>
+        <div id="timer-bar-container">
+          <div id="timer-bar"></div>
+        </div>
+        <div id="timer-text">10</div>
+        <div id="answer-grid">
+          <button class="answer-btn" data-index="0">6</button>
+          <button class="answer-btn" data-index="1">7</button>
+          <button class="answer-btn" data-index="2">8</button>
+          <button class="answer-btn" data-index="3">9</button>
+        </div>
+        <div id="answer-feedback" class="hidden"></div>
+      </div>
+
+      <!-- 游戏结束覆盖层 -->
+      <div id="gameover-overlay" class="hidden">
+        <div id="gameover-content">
+          <div id="gameover-title">💥 基地被摧毁！</div>
+          <div id="gameover-score">
+            <div class="score-row">
+              <span>本轮积分</span>
+              <span id="final-score">0</span>
+            </div>
+            <div class="score-row best-row">
+              <span>🏆 历史最高</span>
+              <span id="best-score">0</span>
+            </div>
+          </div>
+          <button id="restart-btn">🔁 再来一局</button>
+        </div>
+      </div>
+
+      <!-- 开始页面覆盖层 -->
+      <div id="start-overlay">
+        <div id="start-content">
+          <div id="start-title">✈ 数字飞机大战</div>
+          <div id="start-subtitle">答题击落敌机，保卫基地！</div>
+          <button id="continue-btn" class="hidden">▶ 继续挑战</button>
+          <button id="start-btn">🚀 新游戏</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部预留区域 -->
+    <div id="bottom-area"></div>
+  </div>
+
+  <script src="js/base.js"></script>
+  <script src="js/enemy.js"></script>
+  <script src="js/question.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
