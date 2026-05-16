@@ -4,6 +4,8 @@ const Game = {
   state: 'idle',         // idle | playing | gameover
   round: 0,
   score: 0,
+  totalQuestions: 0,     // 总答题数（统计正确率）
+  correctQuestions: 0,
 
   // 回合子阶段
   phase: null,           // 'move' | 'spawn' | 'action' | 'attack' | 'check'
@@ -44,6 +46,7 @@ const Game = {
   initUI() {
     this.dom = {
       scoreValue: document.getElementById('score-value'),
+      accuracyValue: document.getElementById('accuracy-value'),
       hpValue: document.getElementById('hp-value'),
       battlefield: document.getElementById('battlefield'),
       overlay: document.getElementById('answer-overlay'),
@@ -105,6 +108,13 @@ const Game = {
   updateUI() {
     this.dom.scoreValue.textContent = this.score;
     this.dom.hpValue.textContent = Base.hp;
+    // 更新正确率
+    if (this.totalQuestions > 0) {
+      const pct = Math.round(this.correctQuestions / this.totalQuestions * 100);
+      this.dom.accuracyValue.textContent = pct + '%';
+    } else {
+      this.dom.accuracyValue.textContent = '--';
+    }
   },
 
   // ---- 开始游戏 ----
@@ -120,6 +130,8 @@ const Game = {
     this.state = 'idle';
     this.round = 0;
     this.score = 0;
+    this.totalQuestions = 0;
+    this.correctQuestions = 0;
     this.phase = null;
     this.phaseTimer = 0;
     this.actionResolved = false;
@@ -301,6 +313,10 @@ const Game = {
     }
 
     this.dom.finalScore.textContent = finalScore;
+    const accuracyPct = this.totalQuestions > 0
+      ? Math.round(this.correctQuestions / this.totalQuestions * 100) + '%'
+      : '--';
+    document.getElementById('final-accuracy').textContent = accuracyPct;
     this.dom.bestScore.textContent = newBest ? finalScore : bestScore;
     this.dom.gameoverOverlay.classList.remove('hidden');
     this.dom.saveExitBtn.classList.add('hidden');
@@ -584,6 +600,8 @@ const Game = {
       this.dom.feedback.textContent = '✓ 正确！';
       this.dom.feedback.className = 'correct-text';
 
+      this.totalQuestions++;
+      this.correctQuestions++;
       // 积分增加，暂存敌机信息（动画在overlay关闭后启动）
       const enemy = EnemyManager.getAliveEnemies().find(e => e.id === ad.enemyId);
       if (enemy) {
@@ -599,6 +617,7 @@ const Game = {
 
     } else {
       // 答错了
+      this.totalQuestions++;
       SoundFX.wrong();
       ad.result = 'wrong';
       ad.resolved = true;
@@ -627,6 +646,7 @@ const Game = {
     const ad = this.answerData;
     if (ad.resolved) return;
 
+    this.totalQuestions++;
     ad.result = 'timeout';
     ad.resolved = true;
     ad.feedbackTimer = 30;

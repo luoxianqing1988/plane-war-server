@@ -49,6 +49,18 @@ html, body {
   letter-spacing: 1px;
 }
 
+#accuracy-display {
+  color: #4fc3f7;
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+#accuracy-value {
+  color: #81d4fa;
+  font-size: 15px;
+}
+
 #hp-display {
   color: #ff4444;
   letter-spacing: 1px;
