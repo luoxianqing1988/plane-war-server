@@ -563,10 +563,13 @@ const Game = {
       mathInput.focus();
     };
 
-    // 点击复选框：拦截默认动作，弹出验证
+    // 点击复选框：不论原生行为如何，先恢复原状，弹出验证，答对才真正切换
     checkbox.addEventListener('click', function(e) {
       e.preventDefault();
-      pendingToggle = !checkbox.checked;
+      // 有些浏览器无视 preventDefault 已切换了，我们强制恢复
+      const wasChecked = checkbox.checked;
+      checkbox.checked = !wasChecked;
+      pendingToggle = !wasChecked;
       showChallenge();
     });
 
