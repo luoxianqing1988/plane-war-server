@@ -6,8 +6,8 @@ const EnemyTypes = {
     color: '#4caf50',
     shapeColor: '#388e3c',
     size: 'small',
-    width: 38,
-    height: 38,
+    width: 60,
+    height: 60,
     difficulty: 'easy',
     score: 1,
     weight: 50
@@ -18,8 +18,8 @@ const EnemyTypes = {
     color: '#2196f3',
     shapeColor: '#1565c0',
     size: 'medium',
-    width: 48,
-    height: 48,
+    width: 74,
+    height: 74,
     difficulty: 'medium',
     score: 2,
     weight: 30
@@ -30,8 +30,8 @@ const EnemyTypes = {
     color: '#f44336',
     shapeColor: '#b71c1c',
     size: 'large',
-    width: 58,
-    height: 58,
+    width: 86,
+    height: 86,
     difficulty: 'hard',
     score: 3,
     weight: 20

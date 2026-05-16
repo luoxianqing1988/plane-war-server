@@ -19,12 +19,12 @@ const Renderer = {
 
   // 布局常量 (相对比例)
   LAYOUT: {
-    baseX: 0.10,        // 基地水平位置
-    baseWidth: 0.10,    // 基地宽度比例
-    gridLeft: 0.24,     // 敌机网格左边界 (第1格)
-    gridRight: 0.92,    // 敌机网格右边界 (第5格)
-    gridTop: 0.15,      // 网格上边界
-    gridBottom: 0.85,   // 网格下边界
+    baseX: 0.12,        // 基地水平位置
+    baseWidth: 0.12,    // 基地宽度比例
+    gridLeft: 0.22,     // 敌机网格左边界 (第1格)
+    gridRight: 0.92,    // 敌机网格右边界 (第4格)
+    gridTop: 0.12,      // 网格上边界
+    gridBottom: 0.88,   // 网格下边界
   },
 
   init(canvasId) {
@@ -565,7 +565,7 @@ const Renderer = {
     const ctx = this.ctx;
     const bx = w * this.LAYOUT.baseX;
     const by = h * 0.45;
-    const bw = w * 0.10;
+    const bw = w * this.LAYOUT.baseWidth;
     const bh = h * 0.20;
 
     // 基地被击中闪红效果
