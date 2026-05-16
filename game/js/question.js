@@ -1,68 +1,65 @@
-// 题库模块
-//   easy   → 侦察机 (1分)   5以内加法（加数≤5，和≤5）
-//   medium → 轰炸机 (2分)   5以内减法 + 5加几 + 几减5
-//   hard   → 战斗机 (3分)   剩余全部加减法（结果≤10）
-const QuestionBank = {
-  // 题库按难度分三组，每组是 { a, b, op, answer } 的数组
-  easy: [],   // 5以内加法（加数≤5，和≤5）
-  medium: [], // 5以内减法 + 5加几 + 几减5
-  hard: [],   // 剩余全部加减法（结果≤10）
+// ---- 题库模块（穷举法，每题带难度标签） ----
+//
+// 基本规则：算式里所有值（a, b, 结果）都 ≤ 10
+//
+// 低难度（侦察机 1分）：相加和 ≤ 5 的加法
+// 中难度（轰炸机 2分）：
+//   1) 被减数 ≤ 5 的减法
+//   2) 加数/被加数、减数/被减数其中一个为 5 的加法或减法
+// 高难度（战斗机 3分）：所有剩下的其他
 
-  // 每组当前的抽取游标（不放回抽取）
+const QuestionBank = {
+  easy: [],
+  medium: [],
+  hard: [],
+
   _cursor: { easy: 0, medium: 0, hard: 0 },
 
-  // ---- 初始化：穷举生成全部题目 ----
-  //   easy   : 5以内加法（加数≤5，和≤5）             → 侦察机 (1分)
-  //   medium : 5以内减法 + 5加几 + 几减5（结果≤10） → 轰炸机 (2分)
-  //   hard   : 剩余全部加减法（结果≤10）               → 战斗机 (3分)
+  // ---- 穷举生成全部题目 ----
   generate() {
     this.easy = [];
     this.medium = [];
     this.hard = [];
 
-    // ---- 简单：5以内加法 ----
-    // a + b ≤ 5，a ≥ 1，b ≥ 1
-    for (let a = 1; a <= 5; a++) {
-      for (let b = 1; b <= 5; b++) {
-        if (a + b <= 5) {
-          this.easy.push({ a, b, op: '+', answer: a + b });
-        }
-      }
-    }
+    // 用 key 值去重
+    const added = new Set();
+    const addQ = (bank, a, b, op, answer) => {
+      const key = a + '|' + b + '|' + op;
+      if (added.has(key)) return;
+      added.add(key);
+      bank.push({ a, b, op, answer });
+    };
 
-    // ---- 中等 ----
-    // ① 5以内减法：减数 ≤ 5，结果 ≤ 5
-    for (let a = 2; a <= 10; a++) {
-      for (let b = 1; b <= Math.min(5, a - 1); b++) {
-        if (a - b <= 5) {
-          this.medium.push({ a, b, op: '−', answer: a - b });
-        }
-      }
-    }
-    // ② 5加几：5 + b，和 ≤ 10
-    for (let b = 1; b <= 5; b++) {
-      this.medium.push({ a: 5, b, op: '+', answer: 5 + b });
-    }
-    // ③ 几减5：a - 5，结果 ≤ 10
-    for (let a = 6; a <= 10; a++) {
-      this.medium.push({ a, b: 5, op: '−', answer: a - 5 });
-    }
-
-    // ---- 困难：剩余全部加减法（结果 ≤ 10） ----
-    // 加法：排除 easy（和≤5）和 medium（a=5）
+    // ---- 生成所有加法（a + b ≤ 10, a ≥ 1, b ≥ 1） ----
     for (let a = 1; a <= 9; a++) {
       for (let b = 1; b <= 10 - a; b++) {
-        if (a + b > 5 && a !== 5) {
-          this.hard.push({ a, b, op: '+', answer: a + b });
+        const sum = a + b;
+        if (sum <= 5) {
+          // 低难度：和 ≤ 5 的加法
+          addQ(this.easy, a, b, '+', sum);
+        } else if (a === 5 || b === 5) {
+          // 中难度：其中一个数为 5（且和>5，否则会在easy）
+          addQ(this.medium, a, b, '+', sum);
+        } else {
+          // 高难度：其他加法
+          addQ(this.hard, a, b, '+', sum);
         }
       }
     }
-    // 减法：排除 medium（减数≤5 且 结果≤5）
+
+    // ---- 生成所有减法（a > b, a ≤ 10, b ≥ 1） ----
     for (let a = 2; a <= 10; a++) {
       for (let b = 1; b < a; b++) {
         const result = a - b;
-        if (!(b <= 5 && result <= 5)) {
-          this.hard.push({ a, b, op: '−', answer: result });
+        if (a <= 5) {
+          // 中难度：被减数 ≤ 5
+          addQ(this.medium, a, b, '−', result);
+        } else if (a === 5 || b === 5) {
+          // 中难度：其中一个数为 5（且 a>5，否则会被上面捕获）
+          addQ(this.medium, a, b, '−', result);
+        } else {
+          // 高难度：其他减法
+          addQ(this.hard, a, b, '−', result);
         }
       }
     }
@@ -73,6 +70,8 @@ const QuestionBank = {
     this._shuffle(this.hard);
 
     this._cursor = { easy: 0, medium: 0, hard: 0 };
+
+    console.log('题库生成：简单 ' + this.easy.length + ' 题，中等 ' + this.medium.length + ' 题，困难 ' + this.hard.length + ' 题，共 ' + (this.easy.length + this.medium.length + this.hard.length) + ' 题');
   },
 
   // ---- 按难度抽取一题（不放回，耗尽后重置） ----
