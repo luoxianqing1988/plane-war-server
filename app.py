@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """数字飞机大战 - 服务端"""
 import os, sqlite3, json, datetime
-from flask import Flask, send_from_directory, request, jsonify
+from flask import Flask, send_from_directory, request, jsonify, make_response
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 GAME_DIR = os.path.join(BASE, "game")
@@ -32,12 +32,23 @@ init_db()
 
 # ---- 静态文件 ----
 @app.route("/")
+@app.route("/play")
 def index():
-    return send_from_directory(GAME_DIR, "index.html")
+    resp = make_response(send_from_directory(GAME_DIR, "index.html"))
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
 
 @app.route("/<path:filename>")
 def serve(filename):
-    return send_from_directory(GAME_DIR, filename)
+    resp = make_response(send_from_directory(GAME_DIR, filename))
+    # JS/CSS 文件不缓存（避免浏览器用旧代码）
+    if filename.endswith(".js") or filename.endswith(".css"):
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        resp.headers["Pragma"] = "no-cache"
+        resp.headers["Expires"] = "0"
+    return resp
 
 # ---- 答题记录 API ----
 @app.route("/api/log", methods=["POST"])

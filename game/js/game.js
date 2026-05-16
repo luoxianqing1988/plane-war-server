@@ -544,7 +544,13 @@ const Game = {
     const submitBtn = document.getElementById('debug-math-submit');
     const errorMsg = document.getElementById('debug-math-error');
     const toggleArea = document.getElementById('debug-toggle-area');
+    const badge = document.getElementById('debug-badge');
     let currentAnswer = 0;
+    let pendingToggle = false;
+
+    const updateBadge = (checked) => {
+      badge.classList.toggle('hidden', !checked);
+    };
 
     const showChallenge = () => {
       const a = Math.floor(Math.random() * 50) + 10;
@@ -557,15 +563,18 @@ const Game = {
       mathInput.focus();
     };
 
-    toggleArea.addEventListener('click', function(e) {
+    // 点击复选框：拦截默认动作，弹出验证
+    checkbox.addEventListener('click', function(e) {
       e.preventDefault();
+      pendingToggle = !checkbox.checked;
       showChallenge();
     });
 
     submitBtn.addEventListener('click', function() {
       const val = parseInt(mathInput.value);
       if (val === currentAnswer) {
-        checkbox.checked = !checkbox.checked;
+        checkbox.checked = pendingToggle;
+        updateBadge(pendingToggle);
         challenge.classList.add('hidden');
         errorMsg.classList.add('hidden');
       } else {
@@ -966,7 +975,9 @@ const Game = {
       if (enemy && enemy.type) difficulty = enemy.type.difficulty || 'unknown';
     }
     
-    fetch('/api/log', {
+    // 自动适配反代路径（直连 /api/log，反代 /home/plane-war/api/log）
+    const apiBase = window.location.pathname.replace(/\/?$/, '') || '';
+    fetch(apiBase + '/api/log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -2,6 +2,9 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>数字飞机大战</title>
   <link rel="stylesheet" href="style.css">
@@ -13,6 +16,7 @@
       <div id="score-display">积分: <span id="score-value">0</span></div>
       <div id="accuracy-display">正确率: <span id="accuracy-value">--</span></div>
       <div id="hp-display">♥ × <span id="hp-value">10</span></div>
+      <span id="debug-badge" class="hidden">🔇 调试中</span>
       <button id="save-exit-btn" class="hidden">💾 保存退出</button>
     </div>
 
@@ -129,12 +133,12 @@
     <div id="bottom-area"></div>
   </div>
 
-  <script src="js/base.js"></script>
-  <script src="js/enemy.js"></script>
-  <script src="js/question.js"></script>
-  <script src="js/audio.js"></script>
-  <script src="js/renderer.js"></script>
-  <script src="js/game.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/base.js?v=2"></script>
+  <script src="js/enemy.js?v=2"></script>
+  <script src="js/question.js?v=2"></script>
+  <script src="js/audio.js?v=2"></script>
+  <script src="js/renderer.js?v=2"></script>
+  <script src="js/game.js?v=2"></script>
+  <script src="js/main.js?v=2"></script>
 </body>
 </html>
