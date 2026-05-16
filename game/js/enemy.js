@@ -55,9 +55,8 @@ function getScoreWeights(score) {
   return { easy, medium, hard };
 }
 
-// 按分数动态权重随机抽取敌机类型
-function randomEnemyType() {
-  const score = typeof Game !== 'undefined' ? Game.score : 0;
+// 按分数动态权重随机抽取敌机类型（独立函数，传入分数传出类型）
+function pickEnemyType(score) {
   const weights = getScoreWeights(score);
   
   const weightedList = EnemyTypeList.map(t => ({
@@ -76,6 +75,12 @@ function randomEnemyType() {
     if (r <= 0) return entry.type;
   }
   return EnemyTypeList[0];
+}
+
+// 兼容旧接口
+function randomEnemyType() {
+  const score = typeof Game !== 'undefined' ? Game.score : 0;
+  return pickEnemyType(score);
 }
 
 // ========== EnemyManager ==========
