@@ -42,18 +42,17 @@ const EnemyTypes = {
 const EnemyTypeList = Object.values(EnemyTypes);
 
 // 按分数动态计算敌机权重
-//  ≤10分: 100% easy
-//  10~50: 线性过渡
-//  ≥50:  10% easy / 20% medium / 70% hard
+//  ≤5分: 100% easy
+//  5~70: 抛物线平滑过渡（easy↓ medium∧ hard↑）
+//  ≥70: 100% hard
 function getScoreWeights(score) {
-  if (score <= 10) return { easy: 100, medium: 0, hard: 0 };
-  if (score >= 50) return { easy: 10, medium: 20, hard: 70 };
-  const t = (score - 10) / 40; // 0~1
-  return {
-    easy: Math.round(100 - 90 * t),
-    medium: Math.round(0 + 20 * t),
-    hard: Math.round(0 + 70 * t)
-  };
+  if (score <= 5) return { easy: 100, medium: 0, hard: 0 };
+  if (score >= 70) return { easy: 0, medium: 0, hard: 100 };
+  const t = (score - 5) / 65; // 0~1
+  const easy = Math.round(100 * (1 - t) * (1 - t));
+  const hard = Math.round(100 * t * t);
+  const medium = 100 - easy - hard;
+  return { easy, medium, hard };
 }
 
 // 按分数动态权重随机抽取敌机类型
