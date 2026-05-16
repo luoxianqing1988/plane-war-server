@@ -100,6 +100,22 @@ const Game = {
       this.startGame();
     });
 
+    // 调试按钮
+    document.getElementById('debug-victory-btn').addEventListener('click', () => {
+      if (this.state === 'playing') {
+        this.score = 100;
+        this.updateUI();
+        this.state = 'victory';
+        this.showVictory();
+      }
+    });
+    document.getElementById('debug-defeat-btn').addEventListener('click', () => {
+      if (this.state === 'playing') {
+        this.state = 'defeat';
+        this.showDefeat();
+      }
+    });
+
     // 开始按钮事件
     this.dom.startBtn.addEventListener('click', () => {
       this.clearSave();
@@ -458,12 +474,14 @@ const Game = {
     }
   },
 
-  // ---- 基地连环爆炸 ----
+  // ---- 基地连环爆炸（集中在基地附近） ----
   _defeatExplosionInterval: null,
   _startDefeatExplosions() {
-    const colors = ['#ff4400', '#ff8800', '#ffcc00', '#ff2200', '#ff6600'];
     let count = 0;
-    const maxExplosions = 15;
+    const maxExplosions = 12;
+    // 基地在画面底部中央附近
+    const baseX = window.innerWidth * 0.3;
+    const baseY = window.innerHeight * 0.75;
 
     const explode = () => {
       if (count >= maxExplosions) {
@@ -471,27 +489,53 @@ const Game = {
         return;
       }
       count++;
-      const cx = Math.random() * window.innerWidth * 0.8 + window.innerWidth * 0.1;
-      const cy = Math.random() * window.innerHeight * 0.7 + window.innerHeight * 0.1;
+      // 以基地为中心散开
+      const cx = baseX + (Math.random() - 0.5) * 80;
+      const cy = baseY + (Math.random() - 0.5) * 40 - count * 3;
 
-      // 爆炸闪光
-      for (let i = 0; i < 15; i++) {
+      // 中心白光
+      const flash = document.createElement('div');
+      flash.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;width:60px;height:60px;background:radial-gradient(circle,#fff 0%,#ffcc00 40%,transparent 70%);border-radius:50%;left:'+(cx-30)+'px;top:'+(cy-30)+'px;';
+      document.body.appendChild(flash);
+      flash.animate([
+        { transform: 'scale(0.5)', opacity: 1 },
+        { transform: 'scale(2.5)', opacity: 0 }
+      ], { duration: 500, easing: 'ease-out', fill: 'forwards' }).onfinish = () => flash.remove();
+
+      // 碎片粒子（暗红/橙/黑，向外飞散）
+      for (let i = 0; i < 12; i++) {
         const p = document.createElement('div');
-        const c = colors[Math.floor(Math.random() * colors.length)];
-        const s = 4 + Math.random() * 8;
+        const isDebris = Math.random() > 0.5;
+        const c = isDebris ? ['#ff4400','#ff6600','#cc3300','#881100','#333'][Math.floor(Math.random()*5)] : '#ffcc00';
+        const s = isDebris ? 3 + Math.random() * 6 : 2 + Math.random() * 3;
         const angle = Math.random() * 360;
-        const dist = 30 + Math.random() * 100;
-        p.style.cssText = 'position:fixed;pointer-events:none;z-index:10000;width:'+s+'px;height:'+s+'px;background:'+c+';border-radius:50%;left:'+(cx-s/2)+'px;top:'+(cy-s/2)+'px;box-shadow:0 0 10px '+c+';';
+        const dist = 20 + Math.random() * 120;
+        const shape = isDebris ? (Math.random()>0.5?'50%':'2px') : '50%';
+        p.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;width:'+s+'px;height:'+s*0.6+'px;background:'+c+';border-radius:'+shape+';left:'+(cx-s/2)+'px;top:'+(cy-s/2)+'px;';
         document.body.appendChild(p);
         const tx = Math.cos(angle * Math.PI / 180) * dist;
         const ty = Math.sin(angle * Math.PI / 180) * dist;
         p.animate([
-          { transform: 'translate(0,0) scale(1.5)', opacity: 1 },
-          { transform: 'translate('+tx+'px,'+ty+'px) scale(0.2)', opacity: 0 }
-        ], { duration: 400 + Math.random() * 500, easing: 'ease-out', fill: 'forwards' })
-        .onfinish = () => p.remove();
+          { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+          { transform: 'translate('+tx+'px,'+ty+'px) rotate('+(Math.random()*360)+'deg)', opacity: 0 }
+        ], { duration: 300 + Math.random() * 400, easing: 'ease-out', fill: 'forwards' }).onfinish = () => p.remove();
       }
-      this._defeatExplosionInterval = setTimeout(explode, 200 + Math.random() * 300);
+
+      // 烟尘（灰色半透明圆）
+      for (let i = 0; i < 3; i++) {
+        const s = document.createElement('div');
+        const sz = 20 + Math.random() * 30;
+        const ox = (Math.random() - 0.5) * 40;
+        const oy = (Math.random() - 0.5) * 30 - 10;
+        s.style.cssText = 'position:fixed;pointer-events:none;z-index:9998;width:'+sz+'px;height:'+sz+'px;background:rgba(100,100,100,0.3);border-radius:50%;left:'+(cx+ox-sz/2)+'px;top:'+(cy+oy-sz/2)+'px;filter:blur(4px);';
+        document.body.appendChild(s);
+        s.animate([
+          { transform: 'scale(0.5) translate(0,0)', opacity: 0.6 },
+          { transform: 'scale(2) translate(0,-30px)', opacity: 0 }
+        ], { duration: 600 + Math.random() * 400, easing: 'ease-out', fill: 'forwards' }).onfinish = () => s.remove();
+      }
+
+      this._defeatExplosionInterval = setTimeout(explode, 250 + Math.random() * 200);
     };
 
     explode();
