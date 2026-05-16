@@ -43,13 +43,13 @@ const EnemyTypeList = Object.values(EnemyTypes);
 
 // 按分数动态计算敌机权重
 //  ≤5分: 100% easy
-//  5~70: 抛物线平滑过渡（easy↓ medium∧ hard↑）
+//  5~70: easy³快速下降（41分起≤10%）, hard²缓升, medium中间凸起
 //  ≥70: 100% hard
 function getScoreWeights(score) {
   if (score <= 5) return { easy: 100, medium: 0, hard: 0 };
   if (score >= 70) return { easy: 0, medium: 0, hard: 100 };
   const t = (score - 5) / 65; // 0~1
-  const easy = Math.round(100 * (1 - t) * (1 - t));
+  const easy = Math.round(100 * (1 - t) * (1 - t) * (1 - t));
   const hard = Math.round(100 * t * t);
   const medium = 100 - easy - hard;
   return { easy, medium, hard };

@@ -87,23 +87,111 @@ html, body {
   color: #fff;
 }
 
-.debug-btn {
-  padding: 2px 8px;
-  font-size: 16px;
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 6px;
-  background: rgba(255,255,255,0.05);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  line-height: 1.4;
-  margin-left: 4px;
-  opacity: 0.5;
+/* ---- 调试模式 ---- */
+#debug-section {
+  margin-top: 24px;
+  text-align: center;
 }
 
-.debug-btn:hover {
-  opacity: 1;
-  background: rgba(255,255,255,0.15);
-  border-color: rgba(255,255,255,0.4);
+#debug-toggle-area {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+#debug-toggle-area:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.2);
+}
+
+#debug-label {
+  color: rgba(255,255,255,0.4);
+  font-size: 12px;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+
+#debug-checkbox {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: rgba(255,255,255,0.5);
+}
+
+#debug-challenge {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+#debug-challenge.hidden {
+  display: none;
+}
+
+#debug-challenge-text {
+  color: #ffd700;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+#debug-math-question {
+  color: #fff;
+}
+
+.math-input {
+  width: 60px;
+  padding: 4px 8px;
+  font-size: 16px;
+  font-weight: bold;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  text-align: center;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.math-input:focus {
+  border-color: #ffd700;
+}
+
+#debug-math-submit {
+  padding: 4px 14px;
+  font-size: 14px;
+  font-weight: bold;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+#debug-math-submit:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+#debug-math-error {
+  color: #f44336;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+#debug-math-error.hidden {
+  display: none;
 }
 
 #save-exit-btn:active {

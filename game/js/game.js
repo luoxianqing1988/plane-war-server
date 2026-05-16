@@ -100,21 +100,8 @@ const Game = {
       this.startGame();
     });
 
-    // 调试按钮
-    document.getElementById('debug-victory-btn').addEventListener('click', () => {
-      if (this.state === 'playing') {
-        this.score = 100;
-        this.updateUI();
-        this.state = 'victory';
-        this.showVictory();
-      }
-    });
-    document.getElementById('debug-defeat-btn').addEventListener('click', () => {
-      if (this.state === 'playing') {
-        this.state = 'defeat';
-        this.showDefeat();
-      }
-    });
+    // 调试模式：数学验证后切换复选框
+    this._setupDebugToggle();
 
     // 开始按钮事件
     this.dom.startBtn.addEventListener('click', () => {
@@ -548,6 +535,51 @@ const Game = {
     }
   },
 
+  // ---- 调试模式切换（需要正确回答两位数加法） ----
+  _setupDebugToggle() {
+    const checkbox = document.getElementById('debug-checkbox');
+    const challenge = document.getElementById('debug-challenge');
+    const mathQ = document.getElementById('debug-math-question');
+    const mathInput = document.getElementById('debug-math-input');
+    const submitBtn = document.getElementById('debug-math-submit');
+    const errorMsg = document.getElementById('debug-math-error');
+    const toggleArea = document.getElementById('debug-toggle-area');
+    let currentAnswer = 0;
+
+    const showChallenge = () => {
+      const a = Math.floor(Math.random() * 50) + 10;
+      const b = Math.floor(Math.random() * 50) + 10;
+      currentAnswer = a + b;
+      mathQ.textContent = a + ' + ' + b + ' = ';
+      mathInput.value = '';
+      errorMsg.classList.add('hidden');
+      challenge.classList.remove('hidden');
+      mathInput.focus();
+    };
+
+    toggleArea.addEventListener('click', function(e) {
+      e.preventDefault();
+      showChallenge();
+    });
+
+    submitBtn.addEventListener('click', function() {
+      const val = parseInt(mathInput.value);
+      if (val === currentAnswer) {
+        checkbox.checked = !checkbox.checked;
+        challenge.classList.add('hidden');
+        errorMsg.classList.add('hidden');
+      } else {
+        errorMsg.classList.remove('hidden');
+        mathInput.value = '';
+        mathInput.focus();
+      }
+    });
+
+    mathInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') submitBtn.click();
+    });
+  },
+
   // ========== 答题逻辑 ==========
 
   // ---- 玩家点击敌机 ----
@@ -823,6 +855,7 @@ const Game = {
 
       this.totalQuestions++;
       this.correctQuestions++;
+      this._logAnswer(question, index, true);
       // 积分增加，暂存敌机信息（动画在overlay关闭后启动）
       const enemy = EnemyManager.getAliveEnemies().find(e => e.id === ad.enemyId);
       if (enemy) {
@@ -839,6 +872,7 @@ const Game = {
     } else {
       // 答错了
       this.totalQuestions++;
+      this._logAnswer(question, index, false);
       SoundFX.wrong();
       ad.result = 'wrong';
       ad.resolved = true;
@@ -868,6 +902,7 @@ const Game = {
     if (ad.resolved) return;
 
     this.totalQuestions++;
+    this._logAnswer(ad.question, -1, false);
     ad.result = 'timeout';
     ad.resolved = true;
     ad.feedbackTimer = 30;
@@ -914,6 +949,36 @@ const Game = {
   // ---- 查询是否存在存档 ----
   hasSavedGame() {
     return localStorage.getItem('planeWarSave') !== null;
+  },
+
+  // ---- 答题记录日志（发送到服务端 SQLite） ----
+  _logAnswer(question, userAnswerIndex, isCorrect) {
+    if (document.getElementById('debug-checkbox').checked) return;
+    
+    const userAnswer = userAnswerIndex >= 0 && question.options ? question.options[userAnswerIndex] : -1;
+    const qText = question.a + ' ' + (question.op || '+') + ' ' + question.b;
+    // 确定敌机难度
+    const ad = this.answerData;
+    let difficulty = 'unknown';
+    if (ad && ad.enemyId) {
+      const enemies = EnemyManager.getAliveEnemies();
+      const enemy = enemies.find(e => e.id === ad.enemyId);
+      if (enemy && enemy.type) difficulty = enemy.type.difficulty || 'unknown';
+    }
+    
+    fetch('/api/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        round: this.round,
+        score: this.score,
+        question: qText,
+        answer: question.answer,
+        userAnswer: userAnswer,
+        correct: isCorrect,
+        difficulty: difficulty
+      })
+    }).catch(function(){});
   },
 
   // ---- 清除存档 ----
