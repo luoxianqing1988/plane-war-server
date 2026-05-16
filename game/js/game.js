@@ -63,11 +63,38 @@ const Game = {
       startOverlay: document.getElementById('start-overlay'),
       startBtn: document.getElementById('start-btn'),
       continueBtn: document.getElementById('continue-btn'),
-      saveExitBtn: document.getElementById('save-exit-btn')
+      saveExitBtn: document.getElementById('save-exit-btn'),
+      // 胜利/失败
+      victoryOverlay: document.getElementById('victory-overlay'),
+      victoryFinalScore: document.getElementById('victory-final-score'),
+      victoryAccuracy: document.getElementById('victory-accuracy'),
+      victoryBestScore: document.getElementById('victory-best-score'),
+      victoryRestartBtn: document.getElementById('victory-restart-btn'),
+      defeatOverlay: document.getElementById('defeat-overlay'),
+      defeatFinalScore: document.getElementById('defeat-final-score'),
+      defeatAccuracy: document.getElementById('defeat-accuracy'),
+      defeatBestScore: document.getElementById('defeat-best-score'),
+      defeatRestartBtn: document.getElementById('defeat-restart-btn'),
     };
 
     // 重启按钮事件
     this.dom.restartBtn.addEventListener('click', () => {
+      this.clearSave();
+      this.reset();
+      this.startGame();
+    });
+
+    // 胜利重启
+    this.dom.victoryRestartBtn.addEventListener('click', () => {
+      this.hideVictory();
+      this.clearSave();
+      this.reset();
+      this.startGame();
+    });
+
+    // 失败重启
+    this.dom.defeatRestartBtn.addEventListener('click', () => {
+      this.hideDefeat();
       this.clearSave();
       this.reset();
       this.startGame();
@@ -148,6 +175,8 @@ const Game = {
     this.updateUI();
     this.hideOverlay();
     this.hideGameOver();
+    this.hideVictory();
+    this.hideDefeat();
   },
 
   resetAnswerData() {
@@ -277,10 +306,16 @@ const Game = {
         if (this.phaseTimer === 1) {
           EnemyManager.cleanup();
           this.log(`[状态] 场上存活: ${EnemyManager.getAliveCount()} 架`);
+          if (this.score >= 100) {
+            this.state = 'victory';
+            this.log('=== 胜利！=== 100分达成！');
+            this.showVictory();
+            return;
+          }
           if (!Base.isAlive) {
-            this.state = 'gameover';
-            this.log('=== 游戏结束！===');
-            this.showGameOver();
+            this.state = 'defeat';
+            this.log('=== 失败！=== 基地被摧毁！');
+            this.showDefeat();
             return;
           }
         }
@@ -301,17 +336,13 @@ const Game = {
     // 不直接画，后续由 renderer 处理
   },
 
-  // ---- 游戏结束 ----
+  // ---- 游戏结束（旧版，保留用） ----
   showGameOver() {
     SoundFX.gameOver();
     const finalScore = this.score;
     const bestScore = parseInt(localStorage.getItem('planeWarBestScore') || '0');
     const newBest = finalScore > bestScore;
-
-    if (newBest) {
-      localStorage.setItem('planeWarBestScore', finalScore.toString());
-    }
-
+    if (newBest) localStorage.setItem('planeWarBestScore', finalScore.toString());
     this.dom.finalScore.textContent = finalScore;
     const accuracyPct = this.totalQuestions > 0
       ? Math.round(this.correctQuestions / this.totalQuestions * 100) + '%'
@@ -325,6 +356,152 @@ const Game = {
 
   hideGameOver() {
     this.dom.gameoverOverlay.classList.add('hidden');
+  },
+
+  // ---- 胜利 ----
+  showVictory() {
+    SoundFX.victory();
+    const finalScore = this.score;
+    const bestScore = parseInt(localStorage.getItem('planeWarBestScore') || '0');
+    const newBest = finalScore > bestScore;
+    if (newBest) localStorage.setItem('planeWarBestScore', finalScore.toString());
+
+    this.dom.victoryFinalScore.textContent = finalScore;
+    const acc = this.totalQuestions > 0
+      ? Math.round(this.correctQuestions / this.totalQuestions * 100) + '%'
+      : '--';
+    this.dom.victoryAccuracy.textContent = acc;
+    this.dom.victoryBestScore.textContent = newBest ? finalScore : bestScore;
+    this.dom.victoryOverlay.classList.remove('hidden');
+    this.dom.saveExitBtn.classList.add('hidden');
+    this.clearSave();
+
+    // 满屏幕烟花
+    this._startVictoryFireworks();
+  },
+
+  hideVictory() {
+    this.dom.victoryOverlay.classList.add('hidden');
+    this._stopFireworks();
+  },
+
+  // ---- 失败 ----
+  showDefeat() {
+    SoundFX.gameOver();
+    const finalScore = this.score;
+    const bestScore = parseInt(localStorage.getItem('planeWarBestScore') || '0');
+    const newBest = finalScore > bestScore;
+    if (newBest) localStorage.setItem('planeWarBestScore', finalScore.toString());
+
+    this.dom.defeatFinalScore.textContent = finalScore;
+    const acc = this.totalQuestions > 0
+      ? Math.round(this.correctQuestions / this.totalQuestions * 100) + '%'
+      : '--';
+    this.dom.defeatAccuracy.textContent = acc;
+    this.dom.defeatBestScore.textContent = newBest ? finalScore : bestScore;
+    this.dom.clearSave();
+
+    // 基地连环爆炸动画
+    this._startDefeatExplosions();
+
+    // 延迟显示失败面板
+    setTimeout(() => {
+      this.dom.defeatOverlay.classList.remove('hidden');
+      this.dom.saveExitBtn.classList.add('hidden');
+    }, 3000);
+  },
+
+  hideDefeat() {
+    this.dom.defeatOverlay.classList.add('hidden');
+    this._stopDefeatExplosions();
+  },
+
+  // ---- 烟花效果 ----
+  _fireworksInterval: null,
+  _startVictoryFireworks() {
+    const colors = ['#FFD700', '#FF6B6B', '#4CAF50', '#42A5F5', '#FF9800', '#E040FB', '#00BCD4', '#FF4081', '#FFD600'];
+    let burstCount = 0;
+    const maxBursts = 40;
+
+    const burst = () => {
+      if (burstCount >= maxBursts) { this._stopFireworks(); return; }
+      burstCount++;
+      const cx = Math.random() * window.innerWidth;
+      const cy = Math.random() * window.innerHeight * 0.6;
+      for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        const c = colors[Math.floor(Math.random() * colors.length)];
+        const s = 3 + Math.random() * 6;
+        const angle = Math.random() * 360;
+        const dist = 40 + Math.random() * 130;
+        p.style.cssText = 'position:fixed;pointer-events:none;z-index:10000;width:'+s+'px;height:'+s+'px;background:'+c+';border-radius:50%;left:'+(cx-s/2)+'px;top:'+(cy-s/2)+'px;';
+        document.body.appendChild(p);
+        const tx = Math.cos(angle * Math.PI / 180) * dist;
+        const ty = Math.sin(angle * Math.PI / 180) * dist;
+        p.animate([
+          { transform: 'translate(0,0) scale(1)', opacity: 1 },
+          { transform: 'translate('+tx+'px,'+ty+'px) scale(0.3)', opacity: 0 }
+        ], { duration: 600 + Math.random() * 600, easing: 'ease-out', fill: 'forwards' })
+        .onfinish = () => p.remove();
+      }
+      this._fireworksInterval = setTimeout(burst, 300 + Math.random() * 400);
+    };
+
+    // 立刻来一波
+    burst();
+  },
+
+  _stopFireworks() {
+    if (this._fireworksInterval) {
+      clearTimeout(this._fireworksInterval);
+      this._fireworksInterval = null;
+    }
+  },
+
+  // ---- 基地连环爆炸 ----
+  _defeatExplosionInterval: null,
+  _startDefeatExplosions() {
+    const colors = ['#ff4400', '#ff8800', '#ffcc00', '#ff2200', '#ff6600'];
+    let count = 0;
+    const maxExplosions = 15;
+
+    const explode = () => {
+      if (count >= maxExplosions) {
+        this._stopDefeatExplosions();
+        return;
+      }
+      count++;
+      const cx = Math.random() * window.innerWidth * 0.8 + window.innerWidth * 0.1;
+      const cy = Math.random() * window.innerHeight * 0.7 + window.innerHeight * 0.1;
+
+      // 爆炸闪光
+      for (let i = 0; i < 15; i++) {
+        const p = document.createElement('div');
+        const c = colors[Math.floor(Math.random() * colors.length)];
+        const s = 4 + Math.random() * 8;
+        const angle = Math.random() * 360;
+        const dist = 30 + Math.random() * 100;
+        p.style.cssText = 'position:fixed;pointer-events:none;z-index:10000;width:'+s+'px;height:'+s+'px;background:'+c+';border-radius:50%;left:'+(cx-s/2)+'px;top:'+(cy-s/2)+'px;box-shadow:0 0 10px '+c+';';
+        document.body.appendChild(p);
+        const tx = Math.cos(angle * Math.PI / 180) * dist;
+        const ty = Math.sin(angle * Math.PI / 180) * dist;
+        p.animate([
+          { transform: 'translate(0,0) scale(1.5)', opacity: 1 },
+          { transform: 'translate('+tx+'px,'+ty+'px) scale(0.2)', opacity: 0 }
+        ], { duration: 400 + Math.random() * 500, easing: 'ease-out', fill: 'forwards' })
+        .onfinish = () => p.remove();
+      }
+      this._defeatExplosionInterval = setTimeout(explode, 200 + Math.random() * 300);
+    };
+
+    explode();
+  },
+
+  _stopDefeatExplosions() {
+    if (this._defeatExplosionInterval) {
+      clearTimeout(this._defeatExplosionInterval);
+      this._defeatExplosionInterval = null;
+    }
   },
 
   // ========== 答题逻辑 ==========

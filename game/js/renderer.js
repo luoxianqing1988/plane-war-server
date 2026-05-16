@@ -96,7 +96,7 @@ const Renderer = {
     const gridRight = w * L.gridRight;
     const gridTop = h * L.gridTop;
     const gridBottom = h * L.gridBottom;
-    const colW = (gridRight - gridLeft) / 5;
+    const colW = (gridRight - gridLeft) / 4;
     const rowH = (gridBottom - gridTop) / 3;
     return { gridLeft, gridRight, gridTop, gridBottom, colW, rowH };
   },

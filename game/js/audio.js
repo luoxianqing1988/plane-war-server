@@ -22,7 +22,7 @@ const SoundFX = {
 
     const sounds = [
       'click_enemy', 'correct', 'wrong', 'explosion',
-      'base_hit', 'game_over', 'round_start', 'spawn'
+      'base_hit', 'game_over', 'round_start', 'spawn', 'victory'
     ];
 
     return Promise.all(sounds.map(name => {
@@ -60,6 +60,7 @@ const SoundFX = {
   gameOver()    { this._play('game_over', 0.8); },
   roundStart()  { this._play('round_start', 0.6); },
   spawn()       { this._play('spawn', 0.5); },
+  victory()     { this._play('victory', 0.8); },
 };
 
 // 在 DOM 加载完成后初始化音效

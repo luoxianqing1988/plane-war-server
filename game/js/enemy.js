@@ -88,7 +88,7 @@ const EnemyManager = {
   // 最大敌机数
   maxEnemies: 4,
   // 格子数（后台概念：第5格=出生点，第1格=攻击线）
-  totalColumns: 5,
+  totalColumns: 4,
   totalRows: 3,
   // 自增ID
   _nextId: 1,

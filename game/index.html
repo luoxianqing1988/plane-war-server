@@ -67,6 +67,50 @@
           <button id="start-btn">🚀 新游戏</button>
         </div>
       </div>
+
+      <!-- 胜利覆盖层 -->
+      <div id="victory-overlay" class="hidden">
+        <div id="victory-content">
+          <div id="victory-title">🎉 胜 利 ！</div>
+          <div id="victory-score">
+            <div class="score-row">
+              <span>最终积分</span>
+              <span id="victory-final-score">0</span>
+            </div>
+            <div class="score-row">
+              <span>📊 正确率</span>
+              <span id="victory-accuracy">--</span>
+            </div>
+            <div class="score-row best-row">
+              <span>🏆 历史最高</span>
+              <span id="victory-best-score">0</span>
+            </div>
+          </div>
+          <button id="victory-restart-btn">🔁 再来一局</button>
+        </div>
+      </div>
+
+      <!-- 失败覆盖层 -->
+      <div id="defeat-overlay" class="hidden">
+        <div id="defeat-content">
+          <div id="defeat-title">💥 失 败 ！</div>
+          <div id="defeat-score">
+            <div class="score-row">
+              <span>最终积分</span>
+              <span id="defeat-final-score">0</span>
+            </div>
+            <div class="score-row">
+              <span>📊 正确率</span>
+              <span id="defeat-accuracy">--</span>
+            </div>
+            <div class="score-row best-row">
+              <span>🏆 历史最高</span>
+              <span id="defeat-best-score">0</span>
+            </div>
+          </div>
+          <button id="defeat-restart-btn">🔁 再来一局</button>
+        </div>
+      </div>
     </div>
 
     <!-- 底部预留区域 -->

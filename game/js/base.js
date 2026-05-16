@@ -1,7 +1,7 @@
 // 基地模块
 const Base = {
-  maxHp: 10,
-  hp: 10,
+  maxHp: 5,
+  hp: 5,
   // 闪红效果计时
   flashRedTimer: 0,
 
@@ -14,11 +14,11 @@ const Base = {
   },
 
   get isDamaged() {
-    return this.hp <= 5 && this.hp > 0;
+    return this.hp <= 3 && this.hp > 0;
   },
 
   get isCritical() {
-    return this.hp <= 2 && this.hp > 0;
+    return this.hp <= 1 && this.hp > 0;
   },
 
   // 受到一次攻击
