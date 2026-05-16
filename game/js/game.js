@@ -399,7 +399,7 @@ const Game = {
       : '--';
     this.dom.defeatAccuracy.textContent = acc;
     this.dom.defeatBestScore.textContent = newBest ? finalScore : bestScore;
-    this.dom.clearSave();
+    this.clearSave();
 
     // 基地连环爆炸动画
     this._startDefeatExplosions();
