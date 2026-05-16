@@ -100,9 +100,6 @@ const Game = {
       this.startGame();
     });
 
-    // 调试模式：数学验证后切换复选框
-    this._setupDebugToggle();
-
     // 开始按钮事件
     this.dom.startBtn.addEventListener('click', () => {
       this.clearSave();
@@ -535,63 +532,6 @@ const Game = {
     }
   },
 
-  // ---- 调试模式切换（需要正确回答两位数加法） ----
-  _setupDebugToggle() {
-    const checkbox = document.getElementById('debug-checkbox');
-    const challenge = document.getElementById('debug-challenge');
-    const mathQ = document.getElementById('debug-math-question');
-    const mathInput = document.getElementById('debug-math-input');
-    const submitBtn = document.getElementById('debug-math-submit');
-    const errorMsg = document.getElementById('debug-math-error');
-    const toggleArea = document.getElementById('debug-toggle-area');
-    const badge = document.getElementById('debug-badge');
-    let currentAnswer = 0;
-    let pendingToggle = false;
-
-    const updateBadge = (checked) => {
-      badge.classList.toggle('hidden', !checked);
-    };
-
-    const showChallenge = () => {
-      const a = Math.floor(Math.random() * 50) + 10;
-      const b = Math.floor(Math.random() * 50) + 10;
-      currentAnswer = a + b;
-      mathQ.textContent = a + ' + ' + b + ' = ';
-      mathInput.value = '';
-      errorMsg.classList.add('hidden');
-      challenge.classList.remove('hidden');
-      mathInput.focus();
-    };
-
-    // 点击复选框：不论原生行为如何，先恢复原状，弹出验证，答对才真正切换
-    checkbox.addEventListener('click', function(e) {
-      e.preventDefault();
-      // 有些浏览器无视 preventDefault 已切换了，我们强制恢复
-      const wasChecked = checkbox.checked;
-      checkbox.checked = !wasChecked;
-      pendingToggle = !wasChecked;
-      showChallenge();
-    });
-
-    submitBtn.addEventListener('click', function() {
-      const val = parseInt(mathInput.value);
-      if (val === currentAnswer) {
-        checkbox.checked = pendingToggle;
-        updateBadge(pendingToggle);
-        challenge.classList.add('hidden');
-        errorMsg.classList.add('hidden');
-      } else {
-        errorMsg.classList.remove('hidden');
-        mathInput.value = '';
-        mathInput.focus();
-      }
-    });
-
-    mathInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') submitBtn.click();
-    });
-  },
-
   // ========== 答题逻辑 ==========
 
   // ---- 玩家点击敌机 ----
@@ -965,34 +905,31 @@ const Game = {
 
   // ---- 答题记录日志（发送到服务端 SQLite） ----
   _logAnswer(question, userAnswerIndex, isCorrect) {
-    if (document.getElementById('debug-checkbox').checked) return;
-    
-    const userAnswer = userAnswerIndex >= 0 && question.options ? question.options[userAnswerIndex] : -1;
-    const qText = question.a + ' ' + (question.op || '+') + ' ' + question.b;
-    // 确定敌机难度
-    const ad = this.answerData;
-    let difficulty = 'unknown';
-    if (ad && ad.enemyId) {
-      const enemies = EnemyManager.getAliveEnemies();
-      const enemy = enemies.find(e => e.id === ad.enemyId);
-      if (enemy && enemy.type) difficulty = enemy.type.difficulty || 'unknown';
-    }
-    
-    // 自动适配反代路径（直连 /api/log，反代 /home/plane-war/api/log）
-    const apiBase = window.location.pathname.replace(/\/?$/, '') || '';
-    fetch(apiBase + '/api/log', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        round: this.round,
-        score: this.score,
-        question: qText,
-        answer: question.answer,
-        userAnswer: userAnswer,
-        correct: isCorrect,
-        difficulty: difficulty
-      })
-    }).catch(function(){});
+    try {
+      const userAnswer = userAnswerIndex >= 0 && question.options ? question.options[userAnswerIndex] : -1;
+      const qText = question.a + ' ' + (question.op || '+') + ' ' + question.b;
+      const ad = this.answerData;
+      let difficulty = 'unknown';
+      if (ad && ad.enemyId) {
+        const enemies = EnemyManager.getAliveEnemies();
+        const enemy = enemies.find(e => e.id === ad.enemyId);
+        if (enemy && enemy.type) difficulty = enemy.type.difficulty || 'unknown';
+      }
+      const apiBase = window.location.pathname.replace(/\/?$/, '') || '';
+      fetch(apiBase + '/api/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          round: this.round,
+          score: this.score,
+          question: qText,
+          answer: question.answer,
+          userAnswer: userAnswer,
+          correct: isCorrect,
+          difficulty: difficulty
+        })
+      }).catch(function(){});
+    } catch(e) {}
   },
 
   // ---- 清除存档 ----
