@@ -11,6 +11,7 @@
     <!-- 顶部信息栏 -->
     <div id="top-bar">
       <div id="score-display">积分: <span id="score-value">0</span></div>
+      <div id="accuracy-display">正确率: <span id="accuracy-value">--</span></div>
       <div id="hp-display">♥ × <span id="hp-value">10</span></div>
       <button id="save-exit-btn" class="hidden">💾 保存退出</button>
     </div>
@@ -43,6 +44,10 @@
             <div class="score-row">
               <span>本轮积分</span>
               <span id="final-score">0</span>
+            </div>
+            <div class="score-row">
+              <span>📊 正确率</span>
+              <span id="final-accuracy">--</span>
             </div>
             <div class="score-row best-row">
               <span>🏆 历史最高</span>

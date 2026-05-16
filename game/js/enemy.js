@@ -41,13 +41,40 @@ const EnemyTypes = {
 // 获取所有敌机类型的列表（按权重）
 const EnemyTypeList = Object.values(EnemyTypes);
 
-// 按权重随机抽取敌机类型
+// 按分数动态计算敌机权重
+//  ≤10分: 100% easy
+//  10~50: 线性过渡
+//  ≥50:  10% easy / 20% medium / 70% hard
+function getScoreWeights(score) {
+  if (score <= 10) return { easy: 100, medium: 0, hard: 0 };
+  if (score >= 50) return { easy: 10, medium: 20, hard: 70 };
+  const t = (score - 10) / 40; // 0~1
+  return {
+    easy: Math.round(100 - 90 * t),
+    medium: Math.round(0 + 20 * t),
+    hard: Math.round(0 + 70 * t)
+  };
+}
+
+// 按分数动态权重随机抽取敌机类型
 function randomEnemyType() {
-  const totalWeight = EnemyTypeList.reduce((sum, t) => sum + t.weight, 0);
+  const score = typeof Game !== 'undefined' ? Game.score : 0;
+  const weights = getScoreWeights(score);
+  
+  const weightedList = EnemyTypeList.map(t => ({
+    type: t,
+    weight: t.id === 'scout' ? weights.easy :
+            t.id === 'bomber' ? weights.medium :
+            weights.hard
+  }));
+  
+  const totalWeight = weightedList.reduce((sum, t) => sum + t.weight, 0);
+  if (totalWeight <= 0) return EnemyTypeList[0];
+  
   let r = Math.random() * totalWeight;
-  for (const type of EnemyTypeList) {
-    r -= type.weight;
-    if (r <= 0) return type;
+  for (const entry of weightedList) {
+    r -= entry.weight;
+    if (r <= 0) return entry.type;
   }
   return EnemyTypeList[0];
 }
